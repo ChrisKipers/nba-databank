@@ -11,7 +11,7 @@ object Runner extends App {
   val requestDelayInMillis = 50
 
   val allSeasons = {
-    (2015 until 2016).map(year => {
+    (1990 until 2016).map(year => {
       val endingPartOfSeason = (year  + 1) % 100
       f"$year-$endingPartOfSeason%02d"
     })
@@ -43,11 +43,11 @@ object Runner extends App {
     gameLogService.getGameLogs(ts._1, ts._2, delayInMillis = requestDelayInMillis))
 
   gameLogStream.batchInsertResults("gamelogs", insertBatchSize)
-  
+
+  val gameIdStream = gameLogStream.map(_("Game_ID").asInstanceOf[String]).distinct
 
   val boxScoreStreams =
-    gameLogStream
-      .map(_("Game_ID").asInstanceOf[String])
+    gameIdStream
       .flatMap(gameId => boxScoreService.getBoxScoreStreams(gameId, delayInMillis = requestDelayInMillis))
 
   val playerStatsStream = boxScoreService.getBoxScoreStream(boxScoreStreams, BoxScoreSteamType.PlayerStats)
