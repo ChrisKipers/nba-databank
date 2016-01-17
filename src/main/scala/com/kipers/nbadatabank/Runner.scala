@@ -37,6 +37,8 @@ object Runner extends App {
   commonPlayerStream.batchInsertResults("commonplayers", insertBatchSize)
 
   val teamStream = teamService.getTeamsList()
+  teamStream.batchInsertResults("teams", insertBatchSize)
+
   val teamIdStream = teamStream.map(_("TEAM_ID").asInstanceOf[Int])
   val teamIdWithSeasonStream = allSeasons.map(s => teamIdStream.map(t => (t, s))).reduce(_.merge(_))
 
