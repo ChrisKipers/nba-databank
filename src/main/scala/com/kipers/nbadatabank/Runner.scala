@@ -8,7 +8,7 @@ import com.kipers.nbadatabank.common.NbaObservable._
 
 object Runner extends App {
   val insertBatchSize = 1000
-  val requestDelayInMillis = 50
+  val requestDelayInMillis = 100
 
   val allSeasons = {
     (1990 until 2016).map(year => {
@@ -39,6 +39,14 @@ object Runner extends App {
   val teamStream = teamService.getTeamsList()
   val teamIdStream = teamStream.map(_("TEAM_ID").asInstanceOf[Int])
   val teamIdWithSeasonStream = allSeasons.map(s => teamIdStream.map(t => (t, s))).reduce(_.merge(_))
+
+  val rosterStreams = teamIdWithSeasonStream.flatMap{ case(teamId, season) => teamService.getTeamRosterStreams(teamId, season, requestDelayInMillis)}
+  val commonRosterStream = teamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.CommonTeamRoster)
+  val coachRosterStream = teamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
+
+  commonRosterStream.batchInsertResults("commonteamroster", insertBatchSize)
+  coachRosterStream.batchInsertResults("coachroster", insertBatchSize)
+
   val gameLogStream = teamIdWithSeasonStream.flatMap(ts =>
     gameLogService.getGameLogs(ts._1, ts._2, delayInMillis = requestDelayInMillis))
 

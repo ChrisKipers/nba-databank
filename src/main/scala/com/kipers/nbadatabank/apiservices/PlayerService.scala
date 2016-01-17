@@ -14,7 +14,7 @@ trait PlayerService {
 
   val allCommonPlayerEndpoint = "commonallplayers"
 
-  val defaultCommonPlayerParams = Map("IsOnlyCurrentSeason" -> "0", "LeagueId" -> "00")
+  val defaultCommonPlayerParams = Map("IsOnlyCurrentSeason" -> "1", "LeagueId" -> "00")
 
   def getAllCommonPlayerStream(season: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[NbaResult] = {
     val stream = statsApi.get(allCommonPlayerEndpoint, defaultCommonPlayerParams + ("Season" -> season), delayInMillis)
