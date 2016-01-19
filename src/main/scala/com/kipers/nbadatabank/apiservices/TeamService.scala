@@ -5,7 +5,7 @@ import com.kipers.nbadatabank.common.StatsAPI
 import com.kipers.nbadatabank.common.Types._
 import rx.lang.scala.Observable
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 object TeamRosterStreamType extends Enumeration {
   type TeamRosterStreamType = Value

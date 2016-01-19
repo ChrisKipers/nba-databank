@@ -3,7 +3,7 @@ package com.kipers.nbadatabank.apiservices
 import com.kipers.nbadatabank.common.StatsAPI
 import rx.lang.scala.Observable
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 object GameLogService {
   val Endpoint = "teamgamelog"

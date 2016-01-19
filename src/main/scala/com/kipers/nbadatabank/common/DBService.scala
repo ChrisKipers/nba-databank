@@ -1,7 +1,7 @@
 package com.kipers.nbadatabank.common
 
 import com.kipers.nbadatabank.common.Types.NbaResult
-import com.mongodb.casbah.{MongoConnection}
+import com.mongodb.casbah.MongoConnection
 import com.mongodb.casbah.Implicits.mapAsDBObject
 
 object DBCollections extends Enumeration {

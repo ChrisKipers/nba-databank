@@ -17,10 +17,9 @@ object StatsAPI {
     if(delayInMillis > 0) Thread.sleep(delayInMillis)
     Observable.create(subscriber => {
       requestFuture.onSuccess {
-        case results => {
+        case results =>
           results.foreach(r => subscriber.onNext(r))
           subscriber.onCompleted()
-        }
       }
       Subscription {}
     })
@@ -55,12 +54,10 @@ object StatsAPI {
     val headers = resultSet("headers").asInstanceOf[List[String]]
     val rows = resultSet("rowSet").asInstanceOf[List[List[Any]]]
     // Need to remove BigInts because they blow up mongodb
-    val mappedRows = rows.map(r => r.map(v => {
-      v match {
-        case i: BigInt => i.toInt
-        case notBigInt => notBigInt
-      }
-    }))
+    val mappedRows = rows.map(r => r.collect {
+      case i: BigInt => i.toInt
+      case notBigInt => notBigInt
+    })
     mappedRows.map(row => headers.zip(row).toMap)
   }
 }
