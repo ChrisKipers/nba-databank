@@ -14,14 +14,14 @@ object BoxScoreSteamType extends Enumeration {
 }
 
 object BoxScoreService {
-  val endpoint = "boxscore"
+  val Endpoint = "boxscore"
 
   val defaultRequestParams =
     Map("StartRange" -> "0", "EndRange" -> "0", "StartPeriod" -> "0", "EndPeriod" -> "0", "RangeType" -> "0")
 
   def getBoxScoreStreams(gameId: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[(String, List[NbaResult])] = {
     val params = defaultRequestParams + ("GameId" -> gameId)
-    StatsAPI.get(endpoint, params, delayInMillis)
+    StatsAPI.get(Endpoint, params, delayInMillis)
   }
 
   def getBoxScoreStream(boxScoreStreams: Observable[(String, List[NbaResult])], boxScoreStreamType: BoxScoreSteamType): Observable[NbaResult] = {

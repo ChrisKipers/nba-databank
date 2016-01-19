@@ -8,10 +8,10 @@ import rx.lang.scala.{Subscription, Observable}
 import scala.concurrent.ExecutionContext
 
 object StatsAPI {
-  val nbaBaseUrl = "http://stats.nba.com/stats/"
+  val NbaBaseUrl = "http://stats.nba.com/stats/"
 
   def get(endpoint: String, params: Map[String, String], delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[(String, List[NbaResult])] = {
-    val req = url(s"$nbaBaseUrl$endpoint") <<? params
+    val req = url(s"$NbaBaseUrl$endpoint") <<? params
     val body = Http(req OK as.String)
     val requestFuture = body.map(formatResponse)
     if(delayInMillis > 0) Thread.sleep(delayInMillis)
