@@ -62,8 +62,10 @@ object Main extends App {
   val coachRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
   insertStreamIntoDB(coachRosterStream, DBCollections.CoachRosterCollection)
 
-  val gameLogStream = teamIdWithSeasonStream.flatMap(ts =>
-    GameLogService.getGameLogs(ts._1, ts._2, delayInMillis = RequestDelayInMillis))
+  val gameLogStream = teamIdWithSeasonStream.flatMap {
+    case (teamId, season) =>
+      GameLogService.getGameLogs(teamId, season, delayInMillis = RequestDelayInMillis)
+  }
 
   insertStreamIntoDB(gameLogStream, DBCollections.GameLogsCollection)
 
