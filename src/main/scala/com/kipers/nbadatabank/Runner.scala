@@ -1,9 +1,14 @@
 package com.kipers.nbadatabank
 
+import java.util.concurrent.CountDownLatch
+
 import com.kipers.nbadatabank.apiservices._
+import com.kipers.nbadatabank.common.DBCollections.DBCollections
+import com.kipers.nbadatabank.common.{DBCollections, DBService}
+import com.kipers.nbadatabank.common.Types.NbaResult
+import rx.lang.scala.Observable
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import com.kipers.nbadatabank.common.NbaObservable._
 
 object Runner extends App {
   val insertBatchSize = 1000
@@ -19,13 +24,15 @@ object Runner extends App {
     })
   }
 
+  val numberOfStreamsToBlockOn = DBCollections.values.size
+  val latch = new CountDownLatch(numberOfStreamsToBlockOn)
+
 
   val commonPlayerStream = allSeasons.map(PlayerService.getAllCommonPlayerStream(_, requestDelayInMillis)).reduce(_.merge(_))
-  commonPlayerStream.doOnError(println)
-  commonPlayerStream.batchInsertResults("commonplayers", insertBatchSize)
+  insertStreamIntoDB(commonPlayerStream, DBCollections.CommonPlayersCollection)
 
   val teamStream = TeamService.getTeamsList()
-  teamStream.batchInsertResults("teams", insertBatchSize)
+  insertStreamIntoDB(teamStream, DBCollections.TeamCollection)
 
   val teamIdStream = teamStream.map(_("TEAM_ID").asInstanceOf[Int])
   val teamIdWithSeasonStream = allSeasons.map(s => teamIdStream.map(t => (t, s))).reduce(_.merge(_))
@@ -34,13 +41,13 @@ object Runner extends App {
   val commonRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.CommonTeamRoster)
   val coachRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
 
-  commonRosterStream.batchInsertResults("commonteamroster", insertBatchSize)
-  coachRosterStream.batchInsertResults("coachroster", insertBatchSize)
+  insertStreamIntoDB(commonRosterStream, DBCollections.TeamRosterCollection)
+  insertStreamIntoDB(coachRosterStream, DBCollections.CoachRosterCollection)
 
   val gameLogStream = teamIdWithSeasonStream.flatMap(ts =>
     GameLogService.getGameLogs(ts._1, ts._2, delayInMillis = requestDelayInMillis))
 
-  gameLogStream.batchInsertResults("gamelogs", insertBatchSize)
+  insertStreamIntoDB(gameLogStream, DBCollections.GameLogsCollection)
 
   val gameIdStream = gameLogStream.map(_("Game_ID").asInstanceOf[String]).distinct
 
@@ -50,7 +57,24 @@ object Runner extends App {
 
   val playerStatsStream = BoxScoreService.getBoxScoreStream(boxScoreStreams, BoxScoreSteamType.PlayerStats)
 
-  playerStatsStream.batchInsertResults("playerstats", insertBatchSize)
+  insertStreamIntoDB(playerStatsStream, DBCollections.PlayerStatsCollection)
+
+  latch.await()
+
+  def insertStreamIntoDB(stream: Observable[NbaResult], dbCollection: DBCollections) {
+    val dbCollectionName = dbCollection.toString
+    stream
+      .tumblingBuffer(insertBatchSize)
+      .doOnCompleted(latch.countDown())
+      .doOnCompleted(println(s"Done inserted all $dbCollectionName"))
+      .zipWithIndex
+      .subscribe(resultsWithIndex => {
+        val (results, indexOfBatch) = resultsWithIndex
+        val indexOfResults = indexOfBatch * insertBatchSize
+        println(s"Inserting $dbCollectionName $indexOfResults through ${indexOfResults + results.length}")
+        DBService.insertResult(results, dbCollectionName)
+      })
+  }
 }
 
 

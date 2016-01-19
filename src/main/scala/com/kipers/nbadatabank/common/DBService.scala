@@ -4,6 +4,15 @@ import com.kipers.nbadatabank.common.Types.NbaResult
 import com.mongodb.casbah.{MongoConnection}
 import com.mongodb.casbah.Implicits.mapAsDBObject
 
+object DBCollections extends Enumeration {
+  type DBCollections = Value
+  val CommonPlayersCollection = Value("commonplayers")
+  val TeamCollection = Value("teams")
+  val TeamRosterCollection = Value("commonteamroster")
+  val CoachRosterCollection = Value("coachroster")
+  val GameLogsCollection = Value("gamelogs")
+  val PlayerStatsCollection = Value("playerstats")
+}
 
 object DBService {
   val nbaDBName = "nba-databank"
