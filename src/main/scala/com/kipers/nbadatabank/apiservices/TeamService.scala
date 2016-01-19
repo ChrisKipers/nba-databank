@@ -22,7 +22,7 @@ object TeamService {
     val stream = StatsAPI.get(TeamListEndpoint, TeamListParams, delayInMillis)
     StatsAPI.getResultStreamFromRequestStream(stream, "TeamYears")
   }
-  
+
   def getTeamRosterStreams(teamId: Int, season: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[(String, List[NbaResult])] = {
     StatsAPI.get(TeamRosterEndpoint, Map("TeamId" -> teamId.toString, "Season" -> season), delayInMillis)
   }

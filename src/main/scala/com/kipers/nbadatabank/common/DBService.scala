@@ -16,7 +16,7 @@ object DBCollections extends Enumeration {
 
 object DBService {
   val NbaDBName = "nba-databank"
-  
+
   val mongoConn = MongoConnection()
   val mongoDB = mongoConn(NbaDBName)
 

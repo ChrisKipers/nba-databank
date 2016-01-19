@@ -14,7 +14,7 @@ object StatsAPI {
     val req = url(s"$NbaBaseUrl$endpoint") <<? params
     val body = Http(req OK as.String)
     val requestFuture = body.map(formatResponse)
-    if(delayInMillis > 0) Thread.sleep(delayInMillis)
+    if (delayInMillis > 0) Thread.sleep(delayInMillis)
     Observable.create(subscriber => {
       requestFuture.onSuccess {
         case results =>
@@ -27,18 +27,20 @@ object StatsAPI {
 
 
   def getResultStreamFromRequestStream(requestStream: Observable[(String, List[NbaResult])], targetResultName: String): Observable[NbaResult] = {
-      val completeResultStream = requestStream
-        .filter{case (resultName, results) => resultName == targetResultName}
-        .map{case (_, results) => results}
+    val completeResultStream = requestStream
+      .filter { case (resultName, results) => resultName == targetResultName }
+      .map { case (_, results) => results }
 
-      Observable.create(subscriber => {
-        completeResultStream
-          .doOnCompleted{subscriber.onCompleted()}
-          .foreach(allResults => {
-            allResults.foreach(result => subscriber.onNext(result))
-          })
-        Subscription {}
-      })
+    Observable.create(subscriber => {
+      completeResultStream
+        .doOnCompleted {
+          subscriber.onCompleted()
+        }
+        .foreach(allResults => {
+          allResults.foreach(result => subscriber.onNext(result))
+        })
+      Subscription {}
+    })
   }
 
   private def formatResponse(response: String): Map[String, List[NbaResult]] = {

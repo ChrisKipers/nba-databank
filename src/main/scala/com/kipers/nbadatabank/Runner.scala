@@ -19,7 +19,7 @@ object Runner extends App {
 
   val allSeasons = {
     (StartSeasonYear until EndSeasonYear).map(year => {
-      val endingPartOfSeason = (year  + 1) % 100
+      val endingPartOfSeason = (year + 1) % 100
       f"$year-$endingPartOfSeason%02d"
     })
   }
@@ -34,10 +34,10 @@ object Runner extends App {
   val teamStream = TeamService.getTeamsList()
   insertStreamIntoDB(teamStream, DBCollections.TeamCollection)
 
-  val teamIdStream = teamStream.map(_("TEAM_ID").asInstanceOf[Int])
+  val teamIdStream = teamStream.map(_ ("TEAM_ID").asInstanceOf[Int])
   val teamIdWithSeasonStream = allSeasons.map(s => teamIdStream.map(t => (t, s))).reduce(_.merge(_))
 
-  val rosterStreams = teamIdWithSeasonStream.flatMap{ case(teamId, season) => TeamService.getTeamRosterStreams(teamId, season, RequestDelayInMillis)}
+  val rosterStreams = teamIdWithSeasonStream.flatMap { case (teamId, season) => TeamService.getTeamRosterStreams(teamId, season, RequestDelayInMillis) }
   val commonRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.CommonTeamRoster)
   val coachRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
 
@@ -49,7 +49,7 @@ object Runner extends App {
 
   insertStreamIntoDB(gameLogStream, DBCollections.GameLogsCollection)
 
-  val gameIdStream = gameLogStream.map(_("Game_ID").asInstanceOf[String]).distinct
+  val gameIdStream = gameLogStream.map(_ ("Game_ID").asInstanceOf[String]).distinct
 
   val boxScoreStreams =
     gameIdStream
