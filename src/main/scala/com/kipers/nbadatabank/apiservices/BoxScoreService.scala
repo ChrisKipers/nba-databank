@@ -13,9 +13,7 @@ object BoxScoreSteamType extends Enumeration {
   InactivePlayers, PlayerTrack, PlayerTrackTeam = Value
 }
 
-trait BoxScoreService {
-  val statsApi: StatsAPI
-
+object BoxScoreService {
   val endpoint = "boxscore"
 
   val defaultRequestParams =
@@ -23,10 +21,10 @@ trait BoxScoreService {
 
   def getBoxScoreStreams(gameId: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[(String, List[NbaResult])] = {
     val params = defaultRequestParams + ("GameId" -> gameId)
-    statsApi.get(endpoint, params, delayInMillis)
+    StatsAPI.get(endpoint, params, delayInMillis)
   }
 
   def getBoxScoreStream(boxScoreStreams: Observable[(String, List[NbaResult])], boxScoreStreamType: BoxScoreSteamType): Observable[NbaResult] = {
-    statsApi.getResultStreamFromRequestStream(boxScoreStreams, boxScoreStreamType.toString)
+    StatsAPI.getResultStreamFromRequestStream(boxScoreStreams, boxScoreStreamType.toString)
   }
 }

@@ -5,14 +5,13 @@ import rx.lang.scala.Observable
 
 import scala.concurrent.{ExecutionContext}
 
-trait GameLogService {
-  val statsAPI: StatsAPI
+object GameLogService {
   val endpoint = "teamgamelog"
 
   def getGameLogs(teamId: Int, season: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[Map[String, Any]] = {
     val params = Map("TeamId" -> teamId.toString, "SeasonType" -> "Regular Season", "season" -> season)
-    val stream = statsAPI.get(endpoint, params, delayInMillis)
-    statsAPI.getResultStreamFromRequestStream(stream, "TeamGameLog")
+    val stream = StatsAPI.get(endpoint, params, delayInMillis)
+    StatsAPI.getResultStreamFromRequestStream(stream, "TeamGameLog")
   }
 
   def getGameLogId(gameLog: Map[String, Any]): String = {

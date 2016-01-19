@@ -12,23 +12,22 @@ object TeamRosterStreamType extends Enumeration {
   val CommonTeamRoster, Coaches = Value
 }
 
-trait TeamService {
-  val statsAPI: StatsAPI
+object TeamService {
   val teamListEndpoint = "commonteamyears"
   val teamListParams = Map("LeagueId" -> "00")
 
   val teamRosterEndpoint = "commonteamroster"
 
   def getTeamsList(delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[NbaResult] = {
-    val stream = statsAPI.get(teamListEndpoint, teamListParams, delayInMillis)
-    statsAPI.getResultStreamFromRequestStream(stream, "TeamYears")
+    val stream = StatsAPI.get(teamListEndpoint, teamListParams, delayInMillis)
+    StatsAPI.getResultStreamFromRequestStream(stream, "TeamYears")
   }
   
   def getTeamRosterStreams(teamId: Int, season: String, delayInMillis: Int = 0)(implicit exec: ExecutionContext): Observable[(String, List[NbaResult])] = {
-    statsAPI.get(teamRosterEndpoint, Map("TeamId" -> teamId.toString, "Season" -> season), delayInMillis)
+    StatsAPI.get(teamRosterEndpoint, Map("TeamId" -> teamId.toString, "Season" -> season), delayInMillis)
   }
 
   def getTeamRosterStream(teamRosterStreams: Observable[(String, List[NbaResult])], teamRosterStreamType: TeamRosterStreamType): Observable[NbaResult] = {
-    statsAPI.getResultStreamFromRequestStream(teamRosterStreams, teamRosterStreamType.toString)
+    StatsAPI.getResultStreamFromRequestStream(teamRosterStreams, teamRosterStreamType.toString)
   }
 }

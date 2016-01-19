@@ -1,6 +1,5 @@
 package com.kipers.nbadatabank
 
-import com.kipers.nbadatabank.common.{StatsAPI, DBService, StatsAPIImpl}
 import com.kipers.nbadatabank.apiservices._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -10,47 +9,36 @@ object Runner extends App {
   val insertBatchSize = 1000
   val requestDelayInMillis = 100
 
+  val startSeasonYear = 1990
+  val endSeasonYear = 2016
+
   val allSeasons = {
-    (1990 until 2016).map(year => {
+    (startSeasonYear until endSeasonYear).map(year => {
       val endingPartOfSeason = (year  + 1) % 100
       f"$year-$endingPartOfSeason%02d"
     })
   }
 
-  val gameLogService = new GameLogService {
-    override val statsAPI: StatsAPI = StatsAPIImpl
-  }
 
-  val teamService = new TeamService {
-    override val statsAPI: StatsAPI = StatsAPIImpl
-  }
-
-  val boxScoreService = new BoxScoreService {
-    override val statsApi: StatsAPI = StatsAPIImpl
-  }
-
-  val playerService = new PlayerService {
-    override val statsApi: StatsAPI = StatsAPIImpl
-  }
-
-  val commonPlayerStream = allSeasons.map(playerService.getAllCommonPlayerStream(_, requestDelayInMillis)).reduce(_.merge(_))
+  val commonPlayerStream = allSeasons.map(PlayerService.getAllCommonPlayerStream(_, requestDelayInMillis)).reduce(_.merge(_))
+  commonPlayerStream.doOnError(println)
   commonPlayerStream.batchInsertResults("commonplayers", insertBatchSize)
 
-  val teamStream = teamService.getTeamsList()
+  val teamStream = TeamService.getTeamsList()
   teamStream.batchInsertResults("teams", insertBatchSize)
 
   val teamIdStream = teamStream.map(_("TEAM_ID").asInstanceOf[Int])
   val teamIdWithSeasonStream = allSeasons.map(s => teamIdStream.map(t => (t, s))).reduce(_.merge(_))
 
-  val rosterStreams = teamIdWithSeasonStream.flatMap{ case(teamId, season) => teamService.getTeamRosterStreams(teamId, season, requestDelayInMillis)}
-  val commonRosterStream = teamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.CommonTeamRoster)
-  val coachRosterStream = teamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
+  val rosterStreams = teamIdWithSeasonStream.flatMap{ case(teamId, season) => TeamService.getTeamRosterStreams(teamId, season, requestDelayInMillis)}
+  val commonRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.CommonTeamRoster)
+  val coachRosterStream = TeamService.getTeamRosterStream(rosterStreams, TeamRosterStreamType.Coaches)
 
   commonRosterStream.batchInsertResults("commonteamroster", insertBatchSize)
   coachRosterStream.batchInsertResults("coachroster", insertBatchSize)
 
   val gameLogStream = teamIdWithSeasonStream.flatMap(ts =>
-    gameLogService.getGameLogs(ts._1, ts._2, delayInMillis = requestDelayInMillis))
+    GameLogService.getGameLogs(ts._1, ts._2, delayInMillis = requestDelayInMillis))
 
   gameLogStream.batchInsertResults("gamelogs", insertBatchSize)
 
@@ -58,9 +46,9 @@ object Runner extends App {
 
   val boxScoreStreams =
     gameIdStream
-      .flatMap(gameId => boxScoreService.getBoxScoreStreams(gameId, delayInMillis = requestDelayInMillis))
+      .flatMap(gameId => BoxScoreService.getBoxScoreStreams(gameId, delayInMillis = requestDelayInMillis))
 
-  val playerStatsStream = boxScoreService.getBoxScoreStream(boxScoreStreams, BoxScoreSteamType.PlayerStats)
+  val playerStatsStream = BoxScoreService.getBoxScoreStream(boxScoreStreams, BoxScoreSteamType.PlayerStats)
 
   playerStatsStream.batchInsertResults("playerstats", insertBatchSize)
 }

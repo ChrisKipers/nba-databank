@@ -6,7 +6,7 @@ import com.mongodb.casbah.Implicits.mapAsDBObject
 
 
 object DBService {
-  val nbaDBName = "nba-data-bank"
+  val nbaDBName = "nba-databank"
   val mongoConn = MongoConnection()
   val mongoDB = mongoConn(nbaDBName)
 
