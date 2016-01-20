@@ -17,7 +17,7 @@ commonteamroster and teams.
 
 ### gamelog
 Field       | Type
-=========== | ====
+----------- | ----
 FTA         | Integer
 STL         | Integer
 OREB        | Integer
@@ -45,7 +45,7 @@ Team_ID     | Integer
 
 ### playerstats
 Field               | Type
-=================== | ====
+------------------- | ----
 FTA                 | Integer
 STL                 | Integer
 OREB                | Integer
@@ -77,7 +77,7 @@ FG3_PCT             | Float
 
 ### coachroster
 Field           | Type
-=============== | ====
+--------------- | ----
 SCHOOL          | String
 FIRST_NAME      | String
 COACH_ID        | String
@@ -92,7 +92,7 @@ IS_ASSISTANT    | Integer
 
 ### commonplayer
 Field                       | Type
-=========================== | ====
+--------------------------- | ----
 TEAM_CITY                   | String
 TEAM_CODE                   | String
 TO_YEAR                     | String
@@ -108,7 +108,7 @@ PERSON_ID                   | Integer
 
 ### commonteamroster
 Field       | Type
-=========== | ====
+----------- | ----
 EXP         | String
 BIRTH_DATE  | String
 SCHOOL      | String
@@ -125,7 +125,7 @@ SEASON      | String
 
 ### teams
 Field           | Type
-=============== | ====
+--------------- | ----
 ABBREVIATION    | String
 TEAM_ID         | Integer
 LEAGUE_ID       | String
